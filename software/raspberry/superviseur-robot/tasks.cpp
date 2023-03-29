@@ -198,15 +198,14 @@ void Tasks::Run() {
                     cerr << "Error task start: " << strerror(-err) << endl << flush;
                     exit(EXIT_FAILURE);
     }
-
-      if (err = rt_task_start(&th_battery, (void(*)(void*)) & Tasks::Battery, this)) {
-        cerr << "Error task start: " << strerror(-err) << endl << flush;
-        exit(EXIT_FAILURE);   
-      }
-      if (err = rt_task_start(&th_ComputePosition, (void(*)(void*)) & Tasks::ComputePosition, this)) {
-        cerr << "Error task start: " << strerror(-err) << endl << flush;
-        exit(EXIT_FAILURE);   
-      }
+    if (err = rt_task_start(&th_battery, (void(*)(void*)) & Tasks::Battery, this)) {
+      cerr << "Error task start: " << strerror(-err) << endl << flush;
+      exit(EXIT_FAILURE);   
+    }
+    if (err = rt_task_start(&th_ComputePosition, (void(*)(void*)) & Tasks::ComputePosition, this)) {
+      cerr << "Error task start: " << strerror(-err) << endl << flush;
+      exit(EXIT_FAILURE);   
+    }
     cout << "Tasks launched" << endl << flush;
 }
 
@@ -504,9 +503,9 @@ void Tasks::ComputePosition(void *arg){
         rs = robotStarted;
         rt_mutex_release(&mutex_robotStarted);
         if (rs == 1) {  
-            rt_mutex_acquire(&mutex_cam, TM_INFINITE);
+            rt_mutex_acquire(&mutex_camera, TM_INFINITE);
             Img capture = camera.Grab();
-            rt_mutex_release(&mutex_cam);
+            rt_mutex_release(&mutex_camera);
             positionList = capture.SearchRobot(arena);   
             Position* defaultpos = new Position();
 

@@ -65,8 +65,6 @@ private:
     ComMonitor monitor;
     Camera camera;
     ComRobot robot;
-    
-    Camera camera;
     Arena arena;
     bool addArena= false;
     bool testArena = false;
