@@ -64,6 +64,10 @@ private:
     /**********************************************************************/
     ComMonitor monitor;
     ComRobot robot;
+    Camera camera;
+    Arena arena;
+    bool addArena= false;
+    bool testArena = false;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
@@ -76,6 +80,7 @@ private:
     RT_TASK th_openComRobot;
     RT_TASK th_startRobot;
     RT_TASK th_move;
+    RT_TASK th_camera_send;
     
     /**********************************************************************/
     /* Mutex                                                              */
@@ -84,6 +89,7 @@ private:
     RT_MUTEX mutex_robot;
     RT_MUTEX mutex_robotStarted;
     RT_MUTEX mutex_move;
+    RT_MUTEX mutex_camera;
 
     /**********************************************************************/
     /* Semaphores                                                         */
@@ -92,6 +98,7 @@ private:
     RT_SEM sem_openComRobot;
     RT_SEM sem_serverOk;
     RT_SEM sem_startRobot;
+    RT_SEM sem_camera;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -148,6 +155,10 @@ private:
      * @return Message read
      */
     Message *ReadInQueue(RT_QUEUE *queue);
+    /**
+            Send images from camerta
+    */
+    void SendCameraImages(void *arg);
 
 };
 
