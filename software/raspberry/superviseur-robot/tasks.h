@@ -63,7 +63,9 @@ private:
     /* Shared data                                                        */
     /**********************************************************************/
     ComMonitor monitor;
+    Camera camera;
     ComRobot robot;
+    
     Camera camera;
     Arena arena;
     bool addArena= false;
@@ -82,6 +84,9 @@ private:
     RT_TASK th_move;
     RT_TASK th_camera_send;
     
+    RT_TASK th_battery;
+    RT_TASK th_ss;
+    RT_TASK th_ComputePosition;
     /**********************************************************************/
     /* Mutex                                                              */
     /**********************************************************************/
@@ -99,6 +104,7 @@ private:
     RT_SEM sem_serverOk;
     RT_SEM sem_startRobot;
     RT_SEM sem_camera;
+    RT_SEM sem_cam_position_start;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -138,6 +144,11 @@ private:
      * @brief Thread handling control of the robot.
      */
     void MoveTask(void *arg);
+    
+    void Battery(void *arg);
+    
+    void ComputePosition(void *arg);
+
     
     /**********************************************************************/
     /* Queue services                                                     */
