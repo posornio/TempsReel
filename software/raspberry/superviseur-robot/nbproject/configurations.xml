@@ -8,6 +8,7 @@
       <itemPath>./lib/camera.h</itemPath>
       <itemPath>./lib/commonitor.h</itemPath>
       <itemPath>./lib/comrobot.h</itemPath>
+      <itemPath>lib/gettersetter.h</itemPath>
       <itemPath>./lib/img.h</itemPath>
       <itemPath>./lib/messages.h</itemPath>
       <itemPath>./tasks.h</itemPath>
@@ -24,6 +25,7 @@
       <itemPath>./lib/camera.cpp</itemPath>
       <itemPath>./lib/commonitor.cpp</itemPath>
       <itemPath>./lib/comrobot.cpp</itemPath>
+      <itemPath>lib/gettersetter.cpp</itemPath>
       <itemPath>./lib/img.cpp</itemPath>
       <itemPath>./main.cpp</itemPath>
       <itemPath>./lib/messages.cpp</itemPath>
@@ -114,6 +116,10 @@
       </item>
       <item path="./tasks.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="lib/gettersetter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/gettersetter.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="wrapper.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
@@ -184,6 +190,10 @@
       <item path="./tasks.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="./tasks.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="lib/gettersetter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="lib/gettersetter.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="wrapper.c" ex="false" tool="0" flavor2="0">
       </item>

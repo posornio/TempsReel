@@ -66,8 +66,10 @@ private:
     Camera camera;
     ComRobot robot;
     Arena arena;
+    bool boolBattery = false;
     bool addArena= false;
     bool testArena = false;
+    bool computePosition = false;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
