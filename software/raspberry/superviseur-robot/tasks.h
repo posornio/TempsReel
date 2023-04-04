@@ -147,6 +147,7 @@ private:
      * @brief Thread handling control of the robot.
      */
     void MoveTask(void *arg);
+    
     void StartWD(void *arg);
     
     void Battery(void *arg);

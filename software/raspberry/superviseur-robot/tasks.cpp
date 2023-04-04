@@ -31,7 +31,7 @@
 #define PRIORITY_SENDCAMERAIMAGES 20
 #define PRIORITY_BATTERY 20
 #define PRIORITY_CAM_POSITION 15
-#define PRIORITY_STARTROBOTWD 25
+#define PRIORITY_STARTROBOTWD 23
 
 /*
  * Some remarks:
@@ -142,12 +142,12 @@ void Tasks::Init() {
         cerr << "Error task create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
     }
-  /*
+  
        if (err = rt_task_create(&th_ComputePosition, "th_ComputePosition", 0, PRIORITY_CAM_POSITION, 0)) {
         cerr << "Error task create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
     }
-   * */
+   
     if (err = rt_task_create(&th_camera_send, "th_camera_send", 0, PRIORITY_SENDCAMERAIMAGES,0)){
         cerr << "Error task create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
@@ -209,15 +209,11 @@ void Tasks::Run() {
       cerr << "Error task start: " << strerror(-err) << endl << flush;
       exit(EXIT_FAILURE);   
     }
-     if (err = rt_task_start(&th_wd, (void(*)(void*)) & Tasks::ReceiveFromMonTask, this)) {
+   if (err = rt_task_start(&th_wd, (void(*)(void*)) & Tasks::StartWD, this)) {
         cerr << "Error task start: " << strerror(-err) << endl << flush;
-        exit(EXIT_FAILURE);}
-    /*
-    if (err = rt_task_start(&th_ComputePosition, (void(*)(void*)) & Tasks::ComputePosition, this)) {
-      cerr << "Error task start: " << strerror(-err) << endl << flush;
-      exit(EXIT_FAILURE);   
+        exit(EXIT_FAILURE);
     }
-    */
+
     cout << "Tasks launched" << endl << flush;
 }
 
@@ -451,14 +447,21 @@ void Tasks::StartRobotTask(void *arg) {
 }
 
 void Tasks::StartWD(void *args){
+     cout << "Start " << __PRETTY_FUNCTION__ << endl << flush;
+     rt_sem_p(&sem_barrier, TM_INFINITE);
+
     Message* msgRcv;
     int rs;
 
     //    msg rec MESSAGE_ROBOT_START_WITH_WD 
     //sem pour WD??
+    rt_task_set_periodic(NULL, TM_NOW, 500000000);
+
     while (1){
+        rt_task_wait_period(NULL);
+
         //verifier periode 1s
-        rt_task_set_periodic(NULL, TM_NOW, 500000000);
+
         if (boolWD){
             rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
             rs = robotStarted;
