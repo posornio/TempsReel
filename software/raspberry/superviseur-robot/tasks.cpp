@@ -315,6 +315,7 @@ void Tasks::ReceiveFromMonTask(void *arg) {
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_COM_OPEN)) {
             rt_sem_v(&sem_openComRobot);
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITHOUT_WD)) {
+            boolWD = false;
             rt_sem_v(&sem_startRobot);
         } else if (msgRcv->CompareID(MESSAGE_CAM_POSITION_COMPUTE_START)){
             //rt_sem_v(&sem_cam_position_start);
@@ -367,6 +368,8 @@ void Tasks::ReceiveFromMonTask(void *arg) {
         }
         else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITH_WD)){
             boolWD = true;
+            rt_sem_v(&sem_startRobot);
+
         }
         else if (msgRcv->CompareID(MESSAGE_MONITOR_LOST)){
             cout << "Erruer moniteur perdu " << __PRETTY_FUNCTION__ << endl << flush;
@@ -460,10 +463,13 @@ void Tasks::StartWD(void *args){
             rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
             rs = robotStarted;
             rt_mutex_release(&mutex_robotStarted);
+            
+            
             if (rs == 1) {
 
             robot.Write(new Message(MESSAGE_ROBOT_RELOAD_WD));
-            msgRcv = monitor.Read();  
+            cout << "Watchdog is reloaded" << endl << flush;
+            //msgRcv = monitor.Read();  
             /*//si on recoit ce messqge
             if (msgRcv->CompareID(DMB_RELOAD_WD) ){
                 if (comptWD>0){
