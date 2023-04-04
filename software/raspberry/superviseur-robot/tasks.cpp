@@ -31,6 +31,7 @@
 #define PRIORITY_SENDCAMERAIMAGES 20
 #define PRIORITY_BATTERY 20
 #define PRIORITY_CAM_POSITION 15
+#define PRIORITY_STARTROBOTWD 25
 
 /*
  * Some remarks:
@@ -150,6 +151,11 @@ void Tasks::Init() {
     if (err = rt_task_create(&th_camera_send, "th_camera_send", 0, PRIORITY_SENDCAMERAIMAGES,0)){
         cerr << "Error task create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
+        
+    }
+     if (err = rt_task_create(&th_wd, "th_wd", 0, PRIORITY_STARTROBOTWD, 0)) {
+        cerr << "Error task create: " << strerror(-err) << endl << flush;
+        exit(EXIT_FAILURE);
     }
     cout << "Tasks created successfully" << endl << flush;
 
@@ -203,6 +209,9 @@ void Tasks::Run() {
       cerr << "Error task start: " << strerror(-err) << endl << flush;
       exit(EXIT_FAILURE);   
     }
+     if (err = rt_task_start(&th_wd, (void(*)(void*)) & Tasks::ReceiveFromMonTask, this)) {
+        cerr << "Error task start: " << strerror(-err) << endl << flush;
+        exit(EXIT_FAILURE);}
     /*
     if (err = rt_task_start(&th_ComputePosition, (void(*)(void*)) & Tasks::ComputePosition, this)) {
       cerr << "Error task start: " << strerror(-err) << endl << flush;
@@ -356,6 +365,18 @@ void Tasks::ReceiveFromMonTask(void *arg) {
         } else if (msgRcv -> CompareID(MESSAGE_ROBOT_BATTERY_GET)) {
             boolBattery = true;
         }
+        else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITH_WD)){
+            boolWD = true;
+        }
+        else if (msgRcv->CompareID(MESSAGE_MONITOR_LOST)){
+            cout << "Erruer moniteur perdu " << __PRETTY_FUNCTION__ << endl << flush;
+            camera.Close();
+            //monitor.Close();
+            robot.Close();
+            monitor.AcceptClient();
+            //Stop sasha
+            
+        }
         delete(msgRcv); // mus be deleted manually, no consumer
     }
 }
@@ -423,6 +444,40 @@ void Tasks::StartRobotTask(void *arg) {
             robotStarted = 1;
             rt_mutex_release(&mutex_robotStarted);
         }
+    }
+}
+
+void Tasks::StartWD(void *args){
+    Message* msgRcv;
+    int rs;
+
+    //    msg rec MESSAGE_ROBOT_START_WITH_WD 
+    //sem pour WD??
+    while (1){
+        //verifier periode 1s
+        rt_task_set_periodic(NULL, TM_NOW, 500000000);
+        if (boolWD){
+            rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
+            rs = robotStarted;
+            rt_mutex_release(&mutex_robotStarted);
+            if (rs == 1) {
+
+            robot.Write(new Message(MESSAGE_ROBOT_RELOAD_WD));
+            msgRcv = monitor.Read();  
+            /*//si on recoit ce messqge
+            if (msgRcv->CompareID(DMB_RELOAD_WD) ){
+                if (comptWD>0){
+                        comptWD--;}
+                    }
+            else comptWD++;
+               if (comptWD>=3){
+                        //STOP
+                rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
+                robotStarted = 0;
+                rt_mutex_release(&mutex_robotStarted);
+                    }     
+        */}
+    }
     }
 }
 

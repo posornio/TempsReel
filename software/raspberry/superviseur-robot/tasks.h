@@ -70,6 +70,8 @@ private:
     bool addArena= false;
     bool testArena = false;
     bool computePosition = false;
+    bool boolWD = false;
+    int cptWD =0;
     int robotStarted = 0;
     int move = MESSAGE_ROBOT_STOP;
     
@@ -86,6 +88,7 @@ private:
     
     RT_TASK th_battery;
     RT_TASK th_ss;
+    RT_TASK th_wd;
     RT_TASK th_ComputePosition;
     /**********************************************************************/
     /* Mutex                                                              */
@@ -144,6 +147,7 @@ private:
      * @brief Thread handling control of the robot.
      */
     void MoveTask(void *arg);
+    void StartWD(void *arg);
     
     void Battery(void *arg);
     
