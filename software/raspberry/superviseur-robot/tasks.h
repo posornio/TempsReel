@@ -66,12 +66,13 @@ private:
     Camera camera;
     ComRobot robot;
     Arena arena;
-    bool boolBattery = false;
     bool addArena= false;
     bool testArena = false;
     bool computePosition = false;
     int robotStarted = 0;
+    int last_move = MESSAGE_ROBOT_STOP;
     int move = MESSAGE_ROBOT_STOP;
+    int errorcpt = 0;
     
     /**********************************************************************/
     /* Tasks                                                              */
@@ -105,6 +106,7 @@ private:
     RT_SEM sem_startRobot;
     RT_SEM sem_camera;
     RT_SEM sem_cam_position_start;
+    RT_SEM sem_battery;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -170,6 +172,7 @@ private:
             Send images from camerta
     */
     void SendCameraImages(void *arg);
+    bool checkCom(Message * msg);
 
 };
 

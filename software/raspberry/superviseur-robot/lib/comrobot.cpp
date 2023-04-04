@@ -107,7 +107,7 @@ int ComRobot::Close() {
 Message *ComRobot::Write(Message* msg) {
     Message *msgAnswer;
     string s;
-
+    
     if (this->fd != -1) {
 
         Write_Pre();
@@ -137,7 +137,7 @@ Message *ComRobot::Write(Message* msg) {
                 if (s.find("imeout")) { // timeout detecté
                     msgAnswer = new Message(MESSAGE_ANSWER_ROBOT_TIMEOUT);
                 } else {
-                    msgAnswer = new Message(MESSAGE_ANSWER_COM_ERROR);
+                    msgAnswer = new Message(MESSAGE_ANSWER_COM_ERROR);             
                 }
             }
         }
