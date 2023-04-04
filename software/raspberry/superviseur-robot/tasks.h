@@ -69,6 +69,8 @@ private:
     bool addArena= false;
     bool testArena = false;
     bool computePosition = false;
+    bool boolWD = false;
+    int cptWD =0;
     int robotStarted = 0;
     int last_move = MESSAGE_ROBOT_STOP;
     int move = MESSAGE_ROBOT_STOP;
@@ -87,6 +89,7 @@ private:
     
     RT_TASK th_battery;
     RT_TASK th_ss;
+    RT_TASK th_wd;
     RT_TASK th_ComputePosition;
     /**********************************************************************/
     /* Mutex                                                              */
@@ -107,6 +110,7 @@ private:
     RT_SEM sem_camera;
     RT_SEM sem_cam_position_start;
     RT_SEM sem_battery;
+    RT_SEM sem_start_wd;
 
     /**********************************************************************/
     /* Message queues                                                     */
@@ -146,6 +150,8 @@ private:
      * @brief Thread handling control of the robot.
      */
     void MoveTask(void *arg);
+    
+    void StartWD(void *arg);
     
     void Battery(void *arg);
     

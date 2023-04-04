@@ -29,6 +29,7 @@
 #define PRIORITY_TSTARTROBOT 28
 #define PRIORITY_SENDCAMERAIMAGES 20
 #define PRIORITY_BATTERY 15
+#define PRIORITY_STARTROBOTWD 23
 
 /*
  * Some remarks:
@@ -109,6 +110,10 @@ void Tasks::Init() {
         cerr << "Error semaphore create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
     }
+    if (err = rt_sem_create(&sem_start_wd, NULL, 0, S_FIFO)) {
+        cerr << "Error semaphore create: " << strerror(-err) << endl << flush;
+        exit(EXIT_FAILURE);
+    }
     cout << "Semaphores created successfully" << endl << flush;
 
     /**************************************************************************************/
@@ -143,6 +148,11 @@ void Tasks::Init() {
         exit(EXIT_FAILURE);
     }
     if (err = rt_task_create(&th_camera_send, "th_camera_send", 0, PRIORITY_SENDCAMERAIMAGES,0)){
+        cerr << "Error task create: " << strerror(-err) << endl << flush;
+        exit(EXIT_FAILURE);
+        
+    }
+     if (err = rt_task_create(&th_wd, "th_wd", 0, PRIORITY_STARTROBOTWD, 0)) {
         cerr << "Error task create: " << strerror(-err) << endl << flush;
         exit(EXIT_FAILURE);
     }
@@ -198,12 +208,11 @@ void Tasks::Run() {
       cerr << "Error task start: " << strerror(-err) << endl << flush;
       exit(EXIT_FAILURE);   
     }
-    /*
-    if (err = rt_task_start(&th_ComputePosition, (void(*)(void*)) & Tasks::ComputePosition, this)) {
-      cerr << "Error task start: " << strerror(-err) << endl << flush;
-      exit(EXIT_FAILURE);   
+   if (err = rt_task_start(&th_wd, (void(*)(void*)) & Tasks::StartWD, this)) {
+        cerr << "Error task start: " << strerror(-err) << endl << flush;
+        exit(EXIT_FAILURE);
     }
-    */
+
     cout << "Tasks launched" << endl << flush;
 }
 
@@ -301,6 +310,7 @@ void Tasks::ReceiveFromMonTask(void *arg) {
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_COM_OPEN)) {
             rt_sem_v(&sem_openComRobot);
         } else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITHOUT_WD)) {
+            boolWD = false;
             rt_sem_v(&sem_startRobot);
         } else if (msgRcv->CompareID(MESSAGE_CAM_POSITION_COMPUTE_START)){
             //rt_sem_v(&sem_cam_position_start);
@@ -348,7 +358,21 @@ void Tasks::ReceiveFromMonTask(void *arg) {
             addArena = false;
             testArena = false;
         } else if (msgRcv -> CompareID(MESSAGE_ROBOT_BATTERY_GET)) {
-           rt_sem_v(&sem_battery);
+            rt_sem_v(&sem_battery);
+        }
+        else if (msgRcv->CompareID(MESSAGE_ROBOT_START_WITH_WD)){
+            boolWD = true;
+            rt_sem_v(&sem_startRobot);
+
+        }
+        else if (msgRcv->CompareID(MESSAGE_MONITOR_LOST)){
+            cout << "Erruer moniteur perdu " << __PRETTY_FUNCTION__ << endl << flush;
+            camera.Close();
+            //monitor.Close();
+            robot.Close();
+            monitor.AcceptClient();
+            //Stop sasha
+            
         }
         delete(msgRcv); // mus be deleted manually, no consumer
     }
@@ -404,7 +428,12 @@ void Tasks::StartRobotTask(void *arg) {
         rt_sem_p(&sem_startRobot, TM_INFINITE);
         cout << "Start robot without watchdog (";
         rt_mutex_acquire(&mutex_robot, TM_INFINITE);
-        msgSend = robot.Write(robot.StartWithoutWD());
+        if (!boolWD){
+            msgSend = robot.Write(robot.StartWithoutWD());
+        }
+        else{
+            msgSend= robot.Write(robot.StartWithWD());
+        }
         rt_mutex_release(&mutex_robot);
         bool err = checkCom(msgSend);
         cout << msgSend->GetID();
@@ -417,6 +446,40 @@ void Tasks::StartRobotTask(void *arg) {
             rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
             robotStarted = 1;
             rt_mutex_release(&mutex_robotStarted);
+        }
+        if (boolWD){
+            rt_sem_v(&sem_start_wd);
+        }
+    }
+}
+
+void Tasks::StartWD(void *args){
+     cout << "Start " << __PRETTY_FUNCTION__ << endl << flush;
+     rt_sem_p(&sem_barrier, TM_INFINITE);
+     rt_sem_p(&sem_start_wd, TM_INFINITE);
+    Message* msgRcv;
+    int rs;
+
+    //    msg rec MESSAGE_ROBOT_START_WITH_WD 
+    //sem pour WD??
+    rt_task_set_periodic(NULL, TM_NOW, 500000000);
+
+    while (1){
+        rt_task_wait_period(NULL);
+
+        //verifier periode 1s
+
+        if (boolWD){
+            rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
+            rs = robotStarted;
+            rt_mutex_release(&mutex_robotStarted);
+            
+            
+            if (rs == 1) {
+
+            robot.Write(new Message(MESSAGE_ROBOT_RELOAD_WD));
+            cout << "Watchdog is reloaded" << endl << flush;
+            }
         }
     }
 }
@@ -455,7 +518,7 @@ void Tasks::Battery(void *args){
     /**************************************************************************************/
     rt_sem_p(&sem_barrier, TM_INFINITE);
     rt_sem_p(&sem_battery, TM_INFINITE);
-    rt_task_set_periodic(NULL, TM_NOW, 500000000);
+    rt_task_set_periodic(NULL, TM_NOW, 600000000);
       while (1) {
         rt_task_wait_period(NULL);
         rt_mutex_acquire(&mutex_robotStarted, TM_INFINITE);
@@ -515,9 +578,9 @@ void Tasks::MoveTask(void *arg) {
                 rt_mutex_release(&mutex_robot);
                 bool err = checkCom(answer);
                 last_move = cpMove;
+                cout << endl << flush;
             }
         }
-        cout << endl << flush;
     }
 }
 
