@@ -1,6 +1,6 @@
 # Dumber
 
-Se rendre dans le répertoire `software/rasberry/superviseur-robot` pour accéder au travail et lire le fichier `Readme.md` de ce réprtoire pour des explications du code
+Se rendre dans le répertoire `software/rasberry/superviseur-robot` pour accéder au travail et lire le fichier `Readme.md` contenu dans le répertoire mentionné précédemment pour des explications du code
 
 On a implementé les taches suivantes:
   - Ajout d'un message qui notifie la perte de connection avec le moniteur. De plus, le robot, la caméra et le server seront arretés et on reviendra dans le même état qu'au démarage du robot. 
