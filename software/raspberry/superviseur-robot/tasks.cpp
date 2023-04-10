@@ -637,6 +637,7 @@ void Tasks::SendCameraImages(void *arg) {
             rt_mutex_acquire(&mutex_camera, TM_INFINITE);
             cout << "Camera images update" << endl << flush;;
             Img * img = new Img(camera.Grab());
+            rt_mutex_release(&mutex_camera);
             if (!testArena){
                 if (addArena){
                     img->DrawArena(arena);
@@ -683,7 +684,6 @@ void Tasks::SendCameraImages(void *arg) {
             cout << " On draw l'image" << endl << flush;;
             monitor.Write(msgImg);
             rt_mutex_release(&mutex_monitor);
-            rt_mutex_release(&mutex_camera);
          }   
     }
 }
