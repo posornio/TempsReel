@@ -501,6 +501,7 @@ bool Tasks::checkCom(Message * msg) {
             rt_mutex_acquire(&mutex_camera, TM_INFINITE);
             camera.Close();
             rt_mutex_release(&mutex_camera);
+            errorcpt = 0;
         }
         return false;
     }else{
